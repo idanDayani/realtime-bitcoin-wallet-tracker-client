@@ -1,103 +1,133 @@
-import Image from "next/image";
+"use client";
+import React, { useEffect, useState } from "react";
+import { FaBitcoin } from "react-icons/fa";
+import LoadingScreen from "./components/loadingScreen";
+import { WalletData } from "./interfaces/walletData";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    const [walletData, setWalletData] = useState<WalletData | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    useEffect(() => {
+        const ws = new WebSocket("ws://localhost:8080");
+
+        ws.onopen = () => {
+            console.log("WebSocket connected!");
+        };
+
+        ws.onmessage = event => {
+            setWalletData(JSON.parse(event.data));
+        };
+
+        ws.onerror = err => {
+            console.error("WebSocket error:", err);
+        };
+
+        return () => ws.close();
+    }, []);
+
+    if (!walletData) {
+        return <LoadingScreen />;
+    }
+
+    return (
+        <div
+            style={{
+                minHeight: "100vh",
+                width: "100vw",
+                background: "linear-gradient(120deg, #232526 0%, #414345 100%)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                paddingTop: 100,
+            }}
+        >
+            <header
+                style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 18,
+                    padding: "32px 0 0 0",
+                    justifyContent: "center",
+                }}
+            >
+                <FaBitcoin style={{ fontSize: 54, color: "#FFD700", filter: "drop-shadow(0 2px 16px #FFD70088)" }} />
+                <span
+                    style={{
+                        fontSize: 80,
+                        fontWeight: 900,
+                        letterSpacing: 2,
+                        color: "#FFD700",
+                        textShadow: "0 2px 12px #FFD70044",
+                    }}
+                >
+                    Bitcoin Wallet Tracker
+                </span>
+            </header>
+            <div
+                style={{
+                    color: "#bbb",
+                    fontSize: 26,
+                    marginTop: 10,
+                    marginBottom: 40,
+                    textAlign: "center",
+                    maxWidth: "50%",
+                    fontWeight: 400,
+                }}
+            >
+                <p>Real-time monitoring of your Bitcoin wallet.</p>
+                <p>Instantly see your BTC balance, current price, and total value in USD.</p>
+            </div>
+
+            <section
+                style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "stretch",
+                    gap: 48,
+                    width: "100%",
+                    maxWidth: 1200,
+                    paddingTop: 80,
+                }}
+            >
+                <div style={{ minWidth: 220, textAlign: "center" }}>
+                    <div style={{ color: "#FFD700", fontWeight: 700, fontSize: 20, letterSpacing: 1, marginBottom: 8 }}>Wallet</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#fff" }}>BTC</div>
+                </div>
+                <div style={{ minWidth: 220, textAlign: "center" }}>
+                    <div style={{ color: "#FFD700", fontWeight: 700, fontSize: 20, letterSpacing: 1, marginBottom: 8 }}>Balance</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#fff" }}>{walletData.balanceBTC.toLocaleString(undefined, { minimumFractionDigits: 8, maximumFractionDigits: 8 })} BTC</div>
+                </div>
+                <div style={{ minWidth: 220, textAlign: "center" }}>
+                    <div style={{ color: "#FFD700", fontWeight: 700, fontSize: 20, letterSpacing: 1, marginBottom: 8 }}>BTC/USD</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#fff" }}>${walletData.btcUsdPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                </div>
+                <div style={{ minWidth: 220, textAlign: "center" }}>
+                    <div style={{ color: "#FFD700", fontWeight: 700, fontSize: 20, letterSpacing: 1, marginBottom: 8 }}>Total Value</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#fff" }}>${walletData.balanceUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD</div>
+                </div>
+            </section>
+            <footer
+                style={{
+                    color: "#888",
+                    fontSize: 15,
+                    marginTop: "auto",
+                    marginBottom: 24,
+                    textAlign: "center",
+                    letterSpacing: 1,
+                }}
+            >
+                <span style={{ color: "#FFD700", fontWeight: 600 }}>Live</span> updates via WebSocket. Powered by Bitcoin and CoinGecko APIs.
+            </footer>
+            <style>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(40px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
