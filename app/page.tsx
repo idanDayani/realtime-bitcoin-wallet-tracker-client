@@ -10,6 +10,7 @@ import styles from "./Home.module.css";
 
 export default function Home() {
     const [walletData, setWalletData] = useState<WalletData | null>(null);
+    const [isRateLimitError, setIsRateLimitError] = useState(false);
 
     useEffect(() => {
         const ws = new WebSocket("ws://localhost:8080");
@@ -19,7 +20,14 @@ export default function Home() {
         };
 
         ws.onmessage = event => {
-            setWalletData(JSON.parse(event.data));
+            const data = JSON.parse(event.data);
+            console.log("Received wallet event via WebSocket", { data });
+            if (data.isRateLimitError) {
+                setIsRateLimitError(true);
+            } else {
+                setIsRateLimitError(false);
+                setWalletData(data);
+            }
         };
 
         ws.onerror = err => {
@@ -37,6 +45,7 @@ export default function Home() {
         <div className={styles.container}>
             <Header />
             <Description />
+            {isRateLimitError && <div>Rate limit exceeded</div>}
             {walletData && <WalletDetails walletData={walletData} />}
             <Footer />
         </div>
