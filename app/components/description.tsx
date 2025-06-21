@@ -5,7 +5,7 @@ export function Description() {
                 color: "#bbb",
                 fontSize: 26,
                 marginTop: 10,
-                marginBottom: 40,
+                marginBottom: 20,
                 textAlign: "center",
                 maxWidth: "50%",
                 fontWeight: 400,

@@ -7,6 +7,7 @@ import { WalletDetails } from "./components/walletDetails";
 import { Description } from "./components/description";
 import { Header } from "./components/header";
 import styles from "./Home.module.css";
+import RateLimitErrorDescription from "./components/rateLimitErrorDescription";
 
 export default function Home() {
     const [walletData, setWalletData] = useState<WalletData | null>(null);
@@ -37,7 +38,7 @@ export default function Home() {
         return () => ws.close();
     }, []);
 
-    if (!walletData) {
+    if (!walletData && !isRateLimitError) {
         return <LoadingScreen />;
     }
 
@@ -45,7 +46,7 @@ export default function Home() {
         <div className={styles.container}>
             <Header />
             <Description />
-            {isRateLimitError && <div>Rate limit exceeded</div>}
+            {isRateLimitError && <RateLimitErrorDescription />}
             {walletData && <WalletDetails walletData={walletData} />}
             <Footer />
         </div>
